@@ -1,48 +1,11 @@
-import { useState } from 'react';
+import useSort from '../hooks/use-sort';
 import Table from './Table';
 import {GoArrowSmallDown, GoArrowSmallUp} from 'react-icons/go';
 
 const SortableTable = (props) => {
 
     const { config, data } = props;
-
-    const [sortOrder, setSortOrder] = useState(null);
-    const [sortBy, setSortBy] = useState(null);
-
-    const handleClick = (label) => {
-        if (label === sortBy) {
-            if (sortOrder === null) {
-                setSortOrder('asc');
-                setSortBy(label);
-            } else if (sortOrder === 'asc') {
-                setSortOrder('desc');
-                setSortBy(label);
-            } else {
-                setSortOrder(null);
-                setSortBy(null);
-            }
-        } else {
-            setSortBy(label);
-            setSortOrder('asc');
-        }
-    };
-
-    let sortedData = data;
-    if (sortBy && sortOrder) {
-        const { sortValue } = config.find((column) => column.label === sortBy);
-        sortedData = [...data].sort((a, b) => {
-            const valueA = sortValue(a);
-            const valueB = sortValue(b);
-
-            const reverseOrder = sortOrder === 'asc' ? 1: -1;
-
-            if (typeof valueA === 'string') {
-                return valueA.localeCompare(valueB) * reverseOrder;
-            } else {
-                return (valueA - valueB) * reverseOrder;
-            }
-        });
-    }
+    const {sortByLabel, sortBy, sortOrder, sortedData} = useSort(data, config);
 
     const updatedConfig = config.map((column) => {
         if (!column.sortValue) {
@@ -50,7 +13,7 @@ const SortableTable = (props) => {
         }
         return {
             ...column,
-            header: () => <th className='cursor-pointer hover:bg-gray-100' onClick={() => handleClick(column.label)}>
+            header: () => <th className='cursor-pointer hover:bg-gray-100' onClick={() => sortByLabel(column.label)}>
                 <div className='flex items-center'>
                     {getIcons(column.label, sortBy, sortOrder)}
                     {column.label}
